@@ -10,20 +10,9 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func (cfg Config) SetUser(userName string) error {
+func (cfg *Config) SetUser(userName string) error {
 	cfg.CurrentUserName = userName
-
-	data, err := json.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-
-	err = write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return write(*cfg)
 }
 
 const configFileName = ".gatorconfig.json"
@@ -57,13 +46,19 @@ func getConfigFilePath() (string, error) {
 	return path, err
 }
 
-func write(data []byte) error {
+func write(cfg Config) error {
 	path, err := getConfigFilePath()
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(path, data, 0644)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(cfg)
 	if err != nil {
 		return err
 	}

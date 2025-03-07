@@ -28,5 +28,5 @@ func main() {
 		fmt.Println(err)
 	}
 
-	fmt.Println(cfg)
+	fmt.Printf("Read config: %+v\n", cfg)
 }
