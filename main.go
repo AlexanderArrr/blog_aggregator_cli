@@ -2,10 +2,15 @@ package main
 
 import (
 	"fmt"
-	"os/user"
+	"log"
+	"os"
 
 	"github.com/AlexanderArrr/blog_aggregator_cli/internal/config"
 )
+
+type state struct {
+	cfg *config.Config
+}
 
 func main() {
 	cfg, err := config.Read()
@@ -13,20 +18,30 @@ func main() {
 		fmt.Println(err)
 	}
 
-	currentUser, err := user.Current()
-	if err != nil {
-		fmt.Println(err)
+	programState := &state{
+		cfg: &cfg,
 	}
 
-	err = cfg.SetUser(currentUser.Username)
-	if err != nil {
-		fmt.Println(err)
+	cmds := commands{
+		registeredCommands: make(map[string]func(*state, command) error),
+	}
+	cmds.register("login", handlerLogin)
+
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: gator <command> [args...]")
 	}
 
-	cfg, err = config.Read()
-	if err != nil {
-		fmt.Println(err)
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+
+	cmd := command{
+		name: cmdName,
+		args: cmdArgs,
 	}
 
-	fmt.Printf("Read config: %+v\n", cfg)
+	err = cmds.run(programState, cmd)
+	if err != nil {
+		log.Fatalf("error while executing command: %v", err)
+	}
+
 }
