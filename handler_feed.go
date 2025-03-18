@@ -35,6 +35,17 @@ func handlerAddFeed(s *state, cmd command) error {
 		return fmt.Errorf("error while creating feed: %v", err)
 	}
 
+	var arguments []string
+	arguments = append(arguments, feedURL)
+	followdCmd := command{
+		name: "follow",
+		args: arguments,
+	}
+	err = handlerFollow(s, followdCmd)
+	if err != nil {
+		return fmt.Errorf("error while following new feed: %v", err)
+	}
+
 	fmt.Println(feed)
 
 	return nil
