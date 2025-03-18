@@ -9,17 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("usage: gator addfeed <name> <url>")
 	}
 	feedName := cmd.args[0]
 	feedURL := cmd.args[1]
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error while fetching user: %v", err)
-	}
 
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -41,7 +36,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		name: "follow",
 		args: arguments,
 	}
-	err = handlerFollow(s, followdCmd)
+	err = handlerFollow(s, followdCmd, user)
 	if err != nil {
 		return fmt.Errorf("error while following new feed: %v", err)
 	}
