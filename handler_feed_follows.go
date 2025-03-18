@@ -54,3 +54,28 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 
 	return nil
 }
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("usage: gator unfollow <url>")
+	}
+	feedURL := cmd.args[0]
+
+	feedFollow, err := s.db.GetFeedByUrl(context.Background(), feedURL)
+	if err != nil {
+		return fmt.Errorf("error while getting feed by url: %v", err)
+	}
+
+	deleteFFParams := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feedFollow.ID,
+	}
+	err = s.db.DeleteFeedFollow(context.Background(), deleteFFParams)
+	if err != nil {
+		return fmt.Errorf("error while deleting feed follow: %v", err)
+	}
+
+	fmt.Printf("User %v unfollowed the feed %v successfully!", user.Name, feedFollow.Name)
+
+	return nil
+}
